@@ -54,7 +54,8 @@ public partial class DashboardViewModel : ViewModelBase
         _eventRoot.Add(
             _settingsService.WatchProperty(
                 o => o.ParallelLimit,
-                () => _downloadSemaphore.MaxCount = _settingsService.ParallelLimit
+                () => _downloadSemaphore.MaxCount = _settingsService.ParallelLimit,
+                true
             )
         );
 
@@ -111,7 +112,7 @@ public partial class DashboardViewModel : ViewModelBase
                 download.Video!,
                 downloadOption,
                 _settingsService.ShouldInjectSubtitles,
-                _settingsService.DLSubtitles,
+                _settingsService.ShouldDLSubtitles,
                 download.Progress.Merge(progress),
                 download.CancellationToken
             );

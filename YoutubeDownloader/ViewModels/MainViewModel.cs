@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.Input;
+using YoutubeDownloader.Core;
+using YoutubeDownloader.Core.Downloading;
 using YoutubeDownloader.Framework;
 using YoutubeDownloader.Services;
 using YoutubeDownloader.Utils;
@@ -71,6 +73,31 @@ public partial class MainViewModel(
             ProcessEx.StartShellExecute(Program.ProjectReleasesUrl);
     }
 
+    private async Task ShowFFmpegMessageAsync()
+    {
+        if (FFmpeg.IsAvailable())
+            return;
+
+        var dialog = viewModelManager.CreateMessageBoxViewModel(
+            "FFmpeg is missing",
+            $"""
+            FFmpeg is required for {Program.Name} to work. Please download it and make it available in the application directory or on the system PATH.
+
+            Alternatively, you can also download a version of {Program.Name} that has FFmpeg bundled with it.
+
+            Click DOWNLOAD to go to the FFmpeg download page.
+            """,
+            "DOWNLOAD",
+            "CLOSE"
+        );
+
+        if (await dialogManager.ShowDialogAsync(dialog) == true)
+            ProcessEx.StartShellExecute("https://ffmpeg.org/download.html");
+
+        if (Application.Current?.ApplicationLifetime?.TryShutdown(3) != true)
+            Environment.Exit(3);
+    }
+
     private async Task CheckForUpdatesAsync()
     {
         try
@@ -106,6 +133,7 @@ public partial class MainViewModel(
     {
         await ShowUkraineSupportMessageAsync();
         await ShowDevelopmentBuildMessageAsync();
+        await ShowFFmpegMessageAsync();
         await CheckForUpdatesAsync();
     }
 

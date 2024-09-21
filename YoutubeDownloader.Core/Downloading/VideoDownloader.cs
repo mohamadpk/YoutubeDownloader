@@ -69,15 +69,16 @@ public class VideoDownloader(IReadOnlyList<Cookie>? initialCookies = null)
             if (manifest != null)
             {
                 var trackInfo = manifest.GetByLanguage("en");
-                //var track = await _youtube.Videos.ClosedCaptions.GetAsync(trackInfo);
-                string ext = Path.GetExtension(filePath);
-                int place = filePath.LastIndexOf(ext);
-                string srtPath = filePath.Remove(place, ext.Length).Insert(place, ".srt");
-                await _youtube.Videos.ClosedCaptions.DownloadAsync(trackInfo, srtPath);
+                if (trackInfo != null)
+                {
+                    //var track = await _youtube.Videos.ClosedCaptions.GetAsync(trackInfo);
+                    string ext = Path.GetExtension(filePath);
+                    int place = filePath.LastIndexOf(ext);
+                    string srtPath = filePath.Remove(place, ext.Length).Insert(place, ".srt");
+                    await _youtube.Videos.ClosedCaptions.DownloadAsync(trackInfo, srtPath);
+                }
             }
-
         }
-
         var dirPath = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrWhiteSpace(dirPath))
             Directory.CreateDirectory(dirPath);
@@ -86,6 +87,7 @@ public class VideoDownloader(IReadOnlyList<Cookie>? initialCookies = null)
             downloadOption.StreamInfos,
             trackInfos,
             new ConversionRequestBuilder(filePath)
+                .SetFFmpegPath(FFmpeg.TryGetCliFilePath() ?? "ffmpeg")
                 .SetContainer(downloadOption.Container)
                 .SetPreset(ConversionPreset.Medium)
                 .Build(),
